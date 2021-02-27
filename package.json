@@ -1,0 +1,29 @@
+{
+  "name": "todo-list",
+  "private": true,
+  "scripts": {
+    "start": "meteor run",
+    "simulateDB": "json-server --watch --port 2000 data/db.json",
+    "test": "meteor test --once --driver-package meteortesting:mocha",
+    "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
+    "visualize": "meteor --production --extra-packages bundle-visualizer"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.11.2",
+    "@quasar/extras": "1.9.17",
+    "json-server": "0.16.3",
+    "meteor-node-stubs": "^1.0.1",
+    "moment": "2.29.1",
+    "quasar": "1.15.4",
+    "vee-validate": "3.4.5",
+    "vue": "^2.6.12",
+    "vue-meteor-tracker": "^2.0.0-beta.5"
+  },
+  "meteor": {
+    "mainModule": {
+      "client": "client/main.js",
+      "server": "server/main.js"
+    },
+    "testModule": "tests/main.js"
+  }
+}
