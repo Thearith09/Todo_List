@@ -14,85 +14,95 @@
           </q-toolbar-title>
         </q-toolbar>
       </q-header>
-      <q-page-container>
-        <div class="row justify-center">
-          <div class="col-lg-3 col-md-6 col-sm-6 col-xs-10 q-ma-md">
-            <q-input
-              input-class="text-indigo-12 text-bold"
-              color="blue-grey-4"
-              bottom-slots
-              v-model="todo.text"
-              label="NEW TODO"
-            >
-              <template v-slot:append>
-                <q-icon
+      <ValidationObserver ref="observer" v-slot="{ handleSubmit }">
+        <q-page-container>
+          <div class="row justify-center">
+            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-10 q-ma-md">
+              <ValidationProvider
+                name="Todo"
+                rules="required"
+                v-slot="{ errors, invalid, validated }"
+              >
+                <q-input
+                  :error-message="errors[0]"
+                  :error="invalid && validated"
+                  input-class="text-indigo-12 text-bold"
                   color="blue-grey-4"
-                  v-if="todo.text !== ''"
-                  name="close"
-                  @click="todo.text = ''"
-                  class="cursor-pointer"
-                />
-              </template>
-              <template v-slot:after>
-                <q-btn
-                  color="blue-grey-4"
-                  dense
-                  flat
-                  round
-                  icon="send"
-                  @click="addTodo"
-                />
-              </template>
-            </q-input>
+                  bottom-slots
+                  v-model="todo.text"
+                  label="NEW TODO"
+                >
+                  <template v-slot:append>
+                    <q-icon
+                      color="blue-grey-4"
+                      v-if="todo.text !== ''"
+                      name="close"
+                      @click="todo.text = ''"
+                      class="cursor-pointer"
+                    />
+                  </template>
+                  <template v-slot:after>
+                    <q-btn
+                      color="blue-grey-4"
+                      dense
+                      flat
+                      round
+                      icon="send"
+                      @click="handleSubmit(addTodo)"
+                    />
+                  </template>
+                </q-input>
+              </ValidationProvider>
+            </div>
           </div>
-        </div>
-        <div class="row justify-center">
-          <div class="q-mr-md">
-            <q-btn label="ALL" color="info" @click="queryAll" />
+          <div class="row justify-center">
+            <div class="q-mr-md">
+              <q-btn label="ALL" color="info" @click="queryAll" />
+            </div>
+            <div class="q-mr-md">
+              <q-btn
+                label="COMPLETED"
+                color="positive"
+                @click="queryByCompleted"
+              />
+            </div>
+            <div class="q-mr-md">
+              <q-btn label="ONGOING" color="negative" @click="queryByOngoing" />
+            </div>
           </div>
-          <div class="q-mr-md">
-            <q-btn
-              label="COMPLETED"
-              color="positive"
-              @click="queryByCompleted"
-            />
-          </div>
-          <div class="q-mr-md">
-            <q-btn label="ONGOING" color="negative" @click="queryByOngoing" />
-          </div>
-        </div>
-        <template v-for="todo in todos">
-          <div :key="todo.id" class="row justify-center">
-            <q-card
-              class="my-card col-lg-3 col-md-6 col-sm-6 col-xs-10 q-ma-md q-pa-lg borders-left card"
-              :class="{ done: todo.completed, ongoing: !todo.completed }"
-            >
-              <div class="text-indigo-5 text-bold">
-                {{ todo.text }}
-              </div>
-              <div>
-                <q-btn
-                  flat
-                  dense
-                  round
-                  color="negative"
-                  icon="delete"
-                  @click="handleDelete(todo.id)"
-                />
-                <q-btn
-                  round
-                  flat
-                  dense
-                  :class="{ done: todo.completed, ongoing: !todo.completed }"
-                  icon="done"
-                  @click="handleDone(todo)"
-                />
-                <span>{{ moment(todo.date).fromNow() }}</span>
-              </div>
-            </q-card>
-          </div>
-        </template>
-      </q-page-container>
+          <template v-for="todo in todos">
+            <div :key="todo.id" class="row justify-center">
+              <q-card
+                class="my-card col-lg-3 col-md-6 col-sm-6 col-xs-10 q-ma-md q-pa-lg borders-left card"
+                :class="{ done: todo.completed, ongoing: !todo.completed }"
+              >
+                <div class="text-indigo-5 text-bold">
+                  {{ todo.text }}
+                </div>
+                <div>
+                  <q-btn
+                    flat
+                    dense
+                    round
+                    color="negative"
+                    icon="delete"
+                    @click="handleDelete(todo.id)"
+                  />
+                  <q-btn
+                    round
+                    flat
+                    dense
+                    :class="{ done: todo.completed, ongoing: !todo.completed }"
+                    icon="done"
+                    @click="handleDone(todo)"
+                  />
+                  <span>{{ moment(todo.date).fromNow() }}</span>
+                </div>
+              </q-card>
+            </div>
+          </template>
+        </q-page-container>
+      </ValidationObserver>
       <q-footer bordered class="bg-white text-primary">
         <q-toolbar class="text-center">
           <q-toolbar-title>Created By: Who Am I</q-toolbar-title>
@@ -102,21 +112,9 @@
   </div>
 </template>
 <script>
-import { ValidationProvider, ValidationObserver } from "vee-validate";
-import { extend } from "vee-validate";
-import { required } from "vee-validate/dist/rules";
 import moment from "moment";
 
-extend("required", {
-  ...required,
-  message: "This field is required!",
-});
-
 export default {
-  components: {
-    ValidationObserver,
-    ValidationProvider,
-  },
   data() {
     return {
       moment: moment,
