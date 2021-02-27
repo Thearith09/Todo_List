@@ -134,6 +134,7 @@ export default {
   },
   methods: {
     clearInput() {
+      this.$refs.observer.reset();
       this.todo.text = "";
     },
     async addTodo() {
