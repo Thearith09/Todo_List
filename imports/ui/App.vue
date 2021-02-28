@@ -71,7 +71,7 @@
             </div>
           </div>
           <template v-for="todo in todos">
-            <div :key="todo.id" class="row justify-center">
+            <div :key="todo._id" class="row justify-center">
               <q-card
                 class="my-card col-lg-3 col-md-6 col-sm-6 col-xs-10 q-ma-md q-pa-lg borders-left card"
                 :class="{ done: todo.completed, ongoing: !todo.completed }"
@@ -86,7 +86,7 @@
                     round
                     color="negative"
                     icon="delete"
-                    @click="handleDelete(todo.id)"
+                    @click="handleDelete(todo._id)"
                   />
                   <q-btn
                     round
@@ -113,12 +113,12 @@
 </template>
 <script>
 import moment from "moment";
+import { Meteor } from "meteor/meteor";
 
 export default {
   data() {
     return {
       moment: moment,
-      uri: "http://localhost:2000/todos",
       todo: {
         text: "",
         completed: false,
@@ -127,67 +127,90 @@ export default {
       todos: [],
     };
   },
-  async mounted() {
-    let result = await fetch(this.uri);
-    let data = await result.json();
-    this.todos = data;
+  mounted() {
+    return new Promise((resolve, reject) => {
+      Meteor.call("todo.find", (err, res) => {
+        if (err) reject(err.message);
+        else {
+          resolve(res);
+          this.todos = res;
+        }
+      });
+    });
   },
   methods: {
     clearInput() {
       this.$refs.observer.reset();
       this.todo.text = "";
     },
-    async addTodo() {
-      let done = await fetch(this.uri, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: this.todo.text,
-          completed: this.todo.completed,
-          date: this.todo.date,
-        }),
+    addTodo() {
+      return new Promise((resolve, reject) => {
+        Meteor.call("todo.insert", this.todo, async (err, res) => {
+          console.log("client executed");
+          if (err) reject(err.message);
+          else {
+            resolve(res);
+            let done = await this.queryAll();
+            if (done) this.clearInput();
+          }
+        });
       });
-      if (done) {
-        this.clearInput();
-        this.queryAll();
-      }
     },
-    async handleDone(todo) {
-      let done = await fetch(this.uri + `/${todo.id}`, {
-        method: "PATCH",
-        headers: { "Content-type": "application/json" },
-        body: JSON.stringify({ completed: !todo.completed }),
+    handleDone(todo) {
+      todo.completed = !todo.completed;
+      return new Promise((resolve, reject) => {
+        Meteor.call("todo.update", todo, (err, res) => {
+          if (err) reject(err.message);
+          else {
+            resolve(res);
+            this.queryAll();
+          }
+        });
       });
-      if (done) this.queryAll();
     },
-    async handleDelete(id) {
-      let done = await fetch(this.uri + `/${id}`, { method: "DELETE" });
-      if (done) this.queryAll();
-    },
-    async queryAll() {
-      let result = await fetch(this.uri);
-      let data = await result.json();
-      this.todos = data;
-    },
-    async queryByCompleted() {
-      let result = await fetch(this.uri);
-      let data = await result.json();
-      let temp = [];
-      data.forEach((doc) => {
-        if (doc.completed) temp.push(doc);
+    handleDelete(id) {
+      return new Promise((resolve, reject) => {
+        Meteor.call("todo.remove", id, (err, res) => {
+          if (err) reject(err.message);
+          else {
+            resolve(res);
+            this.queryAll();
+          }
+        });
       });
-      this.todos = temp;
     },
-    async queryByOngoing() {
-      let result = await fetch(this.uri);
-      let data = await result.json();
-      let temp = [];
-      data.forEach((doc) => {
-        if (!doc.completed) temp.push(doc);
+    queryAll() {
+      return new Promise((resolve, reject) => {
+        Meteor.call("todo.find", (err, res) => {
+          if (err) reject(err.message);
+          else {
+            resolve(res);
+            this.todos = res;
+          }
+        });
       });
-      this.todos = temp;
+    },
+    queryByCompleted() {
+      return new Promise((resolve, reject) => {
+        Meteor.call("todo.findByCompleted", (err, res) => {
+          if (err) reject(err.message);
+          else {
+            resolve(res);
+            this.todos = res;
+          }
+        });
+      });
+    },
+    queryByOngoing() {
+      return new Promise((resolve, reject) => {
+        Meteor.call("todo.findByOngoing", (err, res) => {
+          if (err) reject(err.message);
+          else {
+            resolve(res);
+            this.todos = res;
+          }
+        });
+      });
     },
   },
 };
