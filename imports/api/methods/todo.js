@@ -20,8 +20,6 @@ Meteor.methods({
         return todos;
     },
     'todo.insert'(todo) {
-        console.log("server executed");
-
         return Todos.insert(todo);
     },
     'todo.update'(todo) {

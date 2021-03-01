@@ -31,6 +31,7 @@
                   bottom-slots
                   v-model="todo.text"
                   label="NEW TODO"
+                  @keyup.enter="handleSubmit(addTodo)"
                 >
                   <template v-slot:append>
                     <q-icon
@@ -146,7 +147,6 @@ export default {
     addTodo() {
       return new Promise((resolve, reject) => {
         Meteor.call("todo.insert", this.todo, async (err, res) => {
-          console.log("client executed");
           if (err) reject(err.message);
           else {
             resolve(res);
