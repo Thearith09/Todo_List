@@ -6,12 +6,15 @@
       style="height: 100vh"
       class="shadow-2 rounded-borders"
     >
-      <q-header bordered class="bg-white text-primary">
+      <q-header bordered class="bg-white text-primary q-mt-sm">
         <q-toolbar>
           <q-toolbar-title class="text-center">
             <q-icon name="grading" style="font-size: 2em" />
             TODO LISTS
           </q-toolbar-title>
+          <span class="text-blue-grey-4" style="font-size: 0.7em">
+            {{ liveTimeStamp }}
+          </span>
         </q-toolbar>
       </q-header>
       <ValidationObserver ref="observer" v-slot="{ handleSubmit }">
@@ -106,7 +109,7 @@
       </ValidationObserver>
       <q-footer bordered class="bg-white text-primary">
         <q-toolbar class="text-center">
-          <q-toolbar-title>Created By: Who Am I</q-toolbar-title>
+          <q-toolbar-title></q-toolbar-title>
         </q-toolbar>
       </q-footer>
     </q-layout>
@@ -119,6 +122,7 @@ import { Meteor } from "meteor/meteor";
 export default {
   data() {
     return {
+      liveTimeStamp: null,
       moment: moment,
       todo: {
         text: "",
@@ -129,6 +133,10 @@ export default {
     };
   },
   mounted() {
+    setInterval(() => {
+      this.liveTimeStamp = moment().format("ddd MMM Do YYYY, h:mm:ss A");
+    }, 1000);
+
     return new Promise((resolve, reject) => {
       Meteor.call("todo.find", (err, res) => {
         if (err) reject(err.message);
